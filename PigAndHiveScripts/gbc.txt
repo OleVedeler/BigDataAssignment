@@ -1,0 +1,43 @@
+Oppgave 1G)
+--Join the popular words with the list of extracted links. what popular words are in the links?
+
+A = LOAD 'popularwords' as (count:int, word:chararray);
+B = LOAD 'LinkCount' as (count:int, word:chararray);
+C = FOREACH B GENERATE FLATTEN(TOKENIZE(word));
+D = JOIN A by word, C by word;
+-- X = FOREACH D GENERATE word/$0? ; 
+F = DISTINCT D;
+DUMP F;
+
+
+
+Oppgave 3B
+--We need to have the file in our local filesystem. The values within the file needs to be tab separated.
+--Hive    10    14     1,5
+--create table pageRank (page STRING, inCount INT, outCount INT, pageRank FLOAT) ROW FORMAT DELIMITED FIELDS TERMINATED BY --'\t';
+
+load data local inpath 'pageranktest.txt' overwrite into table pageRank; 
+
+select * from pageRank; 
+
+select page, MAX(outCount) From pageRank group by page;
+
+
+Oppgave 3C
+
+--This pig script loads the output data from 3A (pagerank). Needs to be in tab separated format.
+--The second line groups the data by values in the apge column.
+--The third line generates the max pageRank values
+--We the limit the output to 10 rows.
+
+data = LOAD 'page_rank_data.txt' AS (page:chararray, inCount:int, outCount:int, pageRank:float);
+grouped_data = GROUP data BY page;
+page_rank_max = FOREACH grouped_data GENERATE group, MAX(data.pageRank);
+limit_output = LIMIT page_rank_max 10;
+order = ORDER limit_output DESC; // BY DESC?
+dump order;
+
+data = LOAD 'page_rank_data.txt' AS (page:chararray, inCount:int, outCount:int, pageRank:float);
+SPLITT data INTO good_data IF ((pageRank>0.8) IF (inCount<50%) IF (outCount>50%))
+
+
